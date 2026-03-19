@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"goserver/internal/middleware"
 	"net/http"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Routes struct {
@@ -28,6 +30,9 @@ func (r *Routes) RegisterRoutes() {
 	// Rotas Públicas
 	r.mux.HandleFunc("POST /login", r.auth.Login)
 	r.mux.HandleFunc("POST /register", r.auth.Register)
+	r.mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
+	r.mux.HandleFunc("GET /reference", ScalarReferenceHandler("/swagger/doc.json"))
+	r.mux.HandleFunc("GET /reference/", ScalarReferenceHandler("/swagger/doc.json"))
 
 	// Rotas Protegidas
 	r.mux.Handle("GET /me", middleware.AuthMiddleware(http.HandlerFunc(r.auth.Me)))

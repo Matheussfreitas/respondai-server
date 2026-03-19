@@ -1,9 +1,9 @@
 package quizzes
 
 import (
-	 "database/sql"
-	 "goserver/internal/repository"
-	 "goserver/internal/domain"
+	"database/sql"
+	"goserver/internal/domain"
+	"goserver/internal/repository"
 )
 
 type FindQuizByIdService struct {
@@ -18,8 +18,10 @@ func NewFindQuizByIdService(repo *repository.QuizRepository, db *sql.DB) *FindQu
 	}
 }
 
+func (s *FindQuizByIdService) FindQuizByIdHandler(id, userId string) (*domain.Quiz, error) {
+	return s.FindQuizById(id, userId)
+}
+
 func (s *FindQuizByIdService) FindQuizById(id, userId string) (*domain.Quiz, error) {
 	return s.repo.FindQuizById(id, userId)
 }
-
-

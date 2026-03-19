@@ -115,6 +115,19 @@ GEMINI_API_KEY=sua_api_key_aqui
 
 ---
 
+## Documentação da API (Swagger + Scalar)
+
+1. **Gerar/atualizar o Swagger/OpenAPI**:
+   ```bash
+   make swagger
+   ```
+
+2. **Abrir no navegador** (com o servidor rodando):
+   - Swagger UI: `/swagger/`
+   - Scalar Reference UI: `/reference`
+
+---
+
 ## Endpoints da API
 
 ### Autenticação (Público)

@@ -1,0 +1,688 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API para o servidor RespondAI, que gerencia usuários, quizzes e interações com o modelo de linguagem.",
+        "title": "RespondAI Server API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/login": {
+            "post": {
+                "description": "Autentica um usuário e retorna um token JWT.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login de usuário",
+                "parameters": [
+                    {
+                        "description": "Credenciais",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retorna o email do usuário autenticado com base no token JWT fornecido.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Retorna os dados do usuário autenticado",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.MeResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizzes": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retorna todos os quizzes do usuário autenticado.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizzes"
+                ],
+                "summary": "Lista quizzes do usuário",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/goserver_internal_domain.Quiz"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizzes/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Gera um quiz com IA e salva no banco.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizzes"
+                ],
+                "summary": "Cria um novo quiz",
+                "parameters": [
+                    {
+                        "description": "Parâmetros do quiz",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.CreateQuizRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.CreateQuizResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizzes/submit": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Submete as respostas de um quiz e calcula a pontuação do usuário.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizzes"
+                ],
+                "summary": "Submete um quiz respondido",
+                "parameters": [
+                    {
+                        "description": "Respostas do quiz",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.SubmitQuizRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.SubmitQuizResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/quizzes/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retorna um quiz específico do usuário autenticado.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Quizzes"
+                ],
+                "summary": "Busca quiz por ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID do Quiz",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.Quiz"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Cria um novo usuário.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Registro de usuário",
+                "parameters": [
+                    {
+                        "description": "Dados de cadastro",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_handler.RegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/goserver_internal_domain.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "goserver_internal_domain.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Erro ao processar requisição"
+                }
+            }
+        },
+        "goserver_internal_domain.Question": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "description": "Lista de opções (ex: Paris, Londres)",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "example": [
+                        "[\"Paris\"",
+                        "\"Londres\"",
+                        "\"Berlim\"",
+                        "\"Roma\"]"
+                    ]
+                },
+                "correct_answer": {
+                    "description": "Índice da resposta correta",
+                    "type": "integer",
+                    "example": 0
+                },
+                "explanation": {
+                    "type": "string",
+                    "example": "Paris é a capital da França."
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "quiz_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "statement": {
+                    "type": "string",
+                    "example": "Qual é a capital da França?"
+                }
+            }
+        },
+        "goserver_internal_domain.Quiz": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "example": "Quiz rápido sobre capitais."
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-01-01T12:00:00Z"
+                },
+                "difficulty": {
+                    "enum": [
+                        "easy",
+                        "medium",
+                        "hard"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/goserver_internal_domain.QuizDifficulty"
+                        }
+                    ],
+                    "example": "easy"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "number_questions": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "questions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/goserver_internal_domain.Question"
+                    }
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Capitais do Mundo"
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
+        "goserver_internal_domain.QuizDifficulty": {
+            "type": "string",
+            "enum": [
+                "easy",
+                "medium",
+                "hard"
+            ],
+            "x-enum-varnames": [
+                "Easy",
+                "Medium",
+                "Hard"
+            ]
+        },
+        "goserver_internal_domain.ResultQuiz": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/goserver_internal_domain.UserAnswer"
+                    }
+                },
+                "completed_at": {
+                    "type": "string",
+                    "example": "2026-01-01T12:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "quiz_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "score": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "total_questions": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "user_id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
+        "goserver_internal_domain.User": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-01-01T12:00:00Z"
+                },
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2026-01-01T12:00:00Z"
+                }
+            }
+        },
+        "goserver_internal_domain.UserAnswer": {
+            "type": "object",
+            "properties": {
+                "is_correct": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "question_id": {
+                    "description": "UUID",
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                },
+                "user_choice": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
+        "internal_handler.CreateQuizRequest": {
+            "type": "object",
+            "properties": {
+                "dificuldade": {
+                    "type": "string"
+                },
+                "numQuestoes": {
+                    "type": "integer"
+                },
+                "tema": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.CreateQuizResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Quiz criado com sucesso"
+                },
+                "quiz": {
+                    "type": "string",
+                    "example": "123e4567-e89b-12d3-a456-426614174000"
+                }
+            }
+        },
+        "internal_handler.LoginRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Login realizado com sucesso"
+                },
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "user": {
+                    "$ref": "#/definitions/goserver_internal_domain.User"
+                }
+            }
+        },
+        "internal_handler.MeResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john.doe@example.com"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Dados do usuário autenticado"
+                }
+            }
+        },
+        "internal_handler.RegisterRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Usuário criado com sucesso"
+                }
+            }
+        },
+        "internal_handler.SubmitQuizRequest": {
+            "type": "object",
+            "properties": {
+                "answers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/goserver_internal_domain.UserAnswer"
+                    }
+                },
+                "quiz_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_handler.SubmitQuizResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Quiz enviado com sucesso"
+                },
+                "quiz": {
+                    "$ref": "#/definitions/goserver_internal_domain.ResultQuiz"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

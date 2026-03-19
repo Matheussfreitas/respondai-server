@@ -34,6 +34,10 @@ type QuizExpected struct {
 	} `json:"questions"`
 }
 
+func (s *CreateQuizService) CreateQuizHandler(userID string, numQuestoes int, dificuldade, tema string) (string, error) {
+	return s.CreateQuiz(numQuestoes, dificuldade, tema, userID)
+}
+
 func (s *CreateQuizService) CreateQuiz(numQuestoes int, dificuldade, tema, userID string) (string, error) {
 	prompt := BuildPrompt(tema, numQuestoes, dificuldade)
 

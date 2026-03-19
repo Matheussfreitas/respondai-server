@@ -1,0 +1,459 @@
+basePath: /
+definitions:
+  goserver_internal_domain.ErrorResponse:
+    properties:
+      message:
+        example: Erro ao processar requisição
+        type: string
+    type: object
+  goserver_internal_domain.Question:
+    properties:
+      answers:
+        description: 'Lista de opções (ex: Paris, Londres)'
+        example:
+        - '["Paris"'
+        - '"Londres"'
+        - '"Berlim"'
+        - '"Roma"]'
+        items:
+          type: string
+        type: array
+      correct_answer:
+        description: Índice da resposta correta
+        example: 0
+        type: integer
+      explanation:
+        example: Paris é a capital da França.
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      quiz_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      statement:
+        example: Qual é a capital da França?
+        type: string
+    type: object
+  goserver_internal_domain.Quiz:
+    properties:
+      content:
+        example: Quiz rápido sobre capitais.
+        type: string
+      created_at:
+        example: "2026-01-01T12:00:00Z"
+        type: string
+      difficulty:
+        allOf:
+        - $ref: '#/definitions/goserver_internal_domain.QuizDifficulty'
+        enum:
+        - easy
+        - medium
+        - hard
+        example: easy
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      number_questions:
+        example: 10
+        type: integer
+      questions:
+        items:
+          $ref: '#/definitions/goserver_internal_domain.Question'
+        type: array
+      title:
+        example: Capitais do Mundo
+        type: string
+      user_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  goserver_internal_domain.QuizDifficulty:
+    enum:
+    - easy
+    - medium
+    - hard
+    type: string
+    x-enum-varnames:
+    - Easy
+    - Medium
+    - Hard
+  goserver_internal_domain.ResultQuiz:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/goserver_internal_domain.UserAnswer'
+        type: array
+      completed_at:
+        example: "2026-01-01T12:00:00Z"
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      quiz_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      score:
+        example: 7
+        type: integer
+      total_questions:
+        example: 10
+        type: integer
+      user_id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  goserver_internal_domain.User:
+    properties:
+      active:
+        example: true
+        type: boolean
+      created_at:
+        example: "2026-01-01T12:00:00Z"
+        type: string
+      email:
+        example: john.doe@example.com
+        type: string
+      id:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      name:
+        example: John Doe
+        type: string
+      token:
+        type: string
+      updated_at:
+        example: "2026-01-01T12:00:00Z"
+        type: string
+    type: object
+  goserver_internal_domain.UserAnswer:
+    properties:
+      is_correct:
+        example: false
+        type: boolean
+      question_id:
+        description: UUID
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+      user_choice:
+        example: 2
+        type: integer
+    type: object
+  internal_handler.CreateQuizRequest:
+    properties:
+      dificuldade:
+        type: string
+      numQuestoes:
+        type: integer
+      tema:
+        type: string
+    type: object
+  internal_handler.CreateQuizResponse:
+    properties:
+      message:
+        example: Quiz criado com sucesso
+        type: string
+      quiz:
+        example: 123e4567-e89b-12d3-a456-426614174000
+        type: string
+    type: object
+  internal_handler.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    type: object
+  internal_handler.LoginResponse:
+    properties:
+      message:
+        example: Login realizado com sucesso
+        type: string
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      user:
+        $ref: '#/definitions/goserver_internal_domain.User'
+    type: object
+  internal_handler.MeResponse:
+    properties:
+      email:
+        example: john.doe@example.com
+        type: string
+      message:
+        example: Dados do usuário autenticado
+        type: string
+    type: object
+  internal_handler.RegisterRequest:
+    properties:
+      email:
+        type: string
+      name:
+        type: string
+      password:
+        type: string
+    type: object
+  internal_handler.RegisterResponse:
+    properties:
+      message:
+        example: Usuário criado com sucesso
+        type: string
+    type: object
+  internal_handler.SubmitQuizRequest:
+    properties:
+      answers:
+        items:
+          $ref: '#/definitions/goserver_internal_domain.UserAnswer'
+        type: array
+      quiz_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  internal_handler.SubmitQuizResponse:
+    properties:
+      message:
+        example: Quiz enviado com sucesso
+        type: string
+      quiz:
+        $ref: '#/definitions/goserver_internal_domain.ResultQuiz'
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API para o servidor RespondAI, que gerencia usuários, quizzes e interações
+    com o modelo de linguagem.
+  title: RespondAI Server API
+  version: "1.0"
+paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Autentica um usuário e retorna um token JWT.
+      parameters:
+      - description: Credenciais
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+      summary: Login de usuário
+      tags:
+      - Auth
+  /me:
+    get:
+      description: Retorna o email do usuário autenticado com base no token JWT fornecido.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.MeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Retorna os dados do usuário autenticado
+      tags:
+      - Auth
+  /quizzes:
+    get:
+      description: Retorna todos os quizzes do usuário autenticado.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/goserver_internal_domain.Quiz'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Lista quizzes do usuário
+      tags:
+      - Quizzes
+  /quizzes/{id}:
+    get:
+      description: Retorna um quiz específico do usuário autenticado.
+      parameters:
+      - description: ID do Quiz
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.Quiz'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Busca quiz por ID
+      tags:
+      - Quizzes
+  /quizzes/create:
+    post:
+      consumes:
+      - application/json
+      description: Gera um quiz com IA e salva no banco.
+      parameters:
+      - description: Parâmetros do quiz
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler.CreateQuizRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.CreateQuizResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Cria um novo quiz
+      tags:
+      - Quizzes
+  /quizzes/submit:
+    post:
+      consumes:
+      - application/json
+      description: Submete as respostas de um quiz e calcula a pontuação do usuário.
+      parameters:
+      - description: Respostas do quiz
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler.SubmitQuizRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_handler.SubmitQuizResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Submete um quiz respondido
+      tags:
+      - Quizzes
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Cria um novo usuário.
+      parameters:
+      - description: Dados de cadastro
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/internal_handler.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_handler.RegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/goserver_internal_domain.ErrorResponse'
+      summary: Registro de usuário
+      tags:
+      - Auth
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
