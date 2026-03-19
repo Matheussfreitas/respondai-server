@@ -1,0 +1,36 @@
+# VCS
+.git
+
+# Editor/OS files
+.DS_Store
+*.swp
+*.swo
+*.tmp
+*.log
+
+# Build outputs
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Go build cache
+.gocache/
+
+# Dependency/cache directories
+vendor/
+
+# Env/config files
+.env
+.env.*
+
+# Docker
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+
+# Misc
+coverage/

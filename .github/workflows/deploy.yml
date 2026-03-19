@@ -1,0 +1,42 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar acesso SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy no servidor
+        run: |
+          ssh user@SEU_SERVIDOR << 'EOF'
+            cd /respondai-server
+
+            echo "Atualizando código..."
+            git pull origin main
+
+            echo "Subindo banco..."
+            docker compose up -d postgres
+
+            echo "Aguardando banco..."
+            docker inspect --format='{{.State.Health.Status}}' postgres-go
+
+            echo "Rodando migrations..."
+            docker compose run --rm migrate
+
+            echo "Subindo API e Nginx..."
+            docker compose up -d --build api nginx
+
+            echo "Limpando imagens antigas..."
+            docker image prune -f
+          EOF

@@ -17,6 +17,38 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  
+  api:
+    build: .
+    container_name: api-go
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8080/health || exit 1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - app-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - app-network
 
   migrate:
     image: migrate/migrate
@@ -26,14 +58,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - app-network
-
-  redis:
-    image: redis:alpine
-    container_name: redis-go
-    ports:
-      - "6379:6379"
     networks:
       - app-network
 
