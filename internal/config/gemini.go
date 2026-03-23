@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"google.golang.org/genai"
@@ -13,6 +14,7 @@ import (
 var (
 	ErrGeminiNotConfigured = errors.New("GEMINI_API_KEY não configurada no ambiente")
 	ErrGeminiRateLimited   = errors.New("limite de requisições da Gemini excedido")
+	ErrGeminiQuotaZero     = errors.New("quota da Gemini está zerada para este projeto/região")
 )
 
 func Gemini(prompt string) (string, error) {
@@ -47,6 +49,10 @@ func Gemini(prompt string) (string, error) {
 		}
 
 		lastErr = err
+		if isGeminiZeroQuotaError(err) {
+			return "", fmt.Errorf("%w: %v", ErrGeminiQuotaZero, err)
+		}
+
 		if !isGeminiRateLimitError(err) || attempt == maxAttempts-1 {
 			break
 		}
@@ -78,4 +84,14 @@ func isGeminiRateLimitError(err error) bool {
 	}
 
 	return false
+}
+
+func isGeminiZeroQuotaError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	msg := err.Error()
+	return strings.Contains(msg, "quota_limit_value:0") ||
+		strings.Contains(msg, "quota_limit_value: 0")
 }

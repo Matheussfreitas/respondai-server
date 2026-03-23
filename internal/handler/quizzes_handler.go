@@ -79,7 +79,14 @@ func (h *QuizHandler) CreateQuiz(w http.ResponseWriter, r *http.Request) {
 	quiz, err := h.createQuizService.CreateQuiz(req.NumQuestoes, req.Dificuldade, req.Tema, userId)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
+		if errors.Is(err, config.ErrGeminiQuotaZero) {
+			w.WriteHeader(http.StatusFailedDependency)
+			_ = json.NewEncoder(w).Encode(domain.ErrorResponse{Message: "Quota da Gemini está em 0 para este projeto/região. Ative billing/tier no AI Studio ou solicite aumento de quota."})
+			return
+		}
+
 		if errors.Is(err, config.ErrGeminiRateLimited) {
+			w.Header().Set("Retry-After", "60")
 			w.WriteHeader(http.StatusTooManyRequests)
 			_ = json.NewEncoder(w).Encode(domain.ErrorResponse{Message: "Limite da IA atingido (429). Tente novamente em instantes."})
 			return
