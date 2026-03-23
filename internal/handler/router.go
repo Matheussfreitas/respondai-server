@@ -28,6 +28,7 @@ func (r *Routes) GetHandler() http.Handler {
 
 func (r *Routes) RegisterRoutes() {
 	// Rotas Públicas
+	r.mux.HandleFunc("GET /health", HealthCheck)
 	r.mux.HandleFunc("POST /login", r.auth.Login)
 	r.mux.HandleFunc("POST /register", r.auth.Register)
 	r.mux.Handle("GET /swagger/", httpSwagger.WrapHandler)
