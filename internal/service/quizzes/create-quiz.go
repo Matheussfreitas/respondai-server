@@ -3,10 +3,12 @@ package quizzes
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"goserver/internal/config"
 	"goserver/internal/domain"
 	"goserver/internal/repository"
+	"strings"
 	"time"
 )
 
@@ -49,7 +51,12 @@ func (s *CreateQuizService) CreateQuiz(numQuestoes int, dificuldade, tema, userI
 
 	var quizExpected QuizExpected
 
-	if err := json.Unmarshal([]byte(quizBuild), &quizExpected); err != nil {
+	quizJSON, err := extractJSONFromModelOutput(quizBuild)
+	if err != nil {
+		return "", fmt.Errorf("resposta da IA sem JSON válido: %w", err)
+	}
+
+	if err := json.Unmarshal([]byte(quizJSON), &quizExpected); err != nil {
 		fmt.Println(err)
 		return "", err
 	}
@@ -104,4 +111,50 @@ func BuildPrompt(tema string, numQuestoes int, dificuldade string) string {
       ]
     }
     Não inclua explicações fora do JSON.`, tema, numQuestoes, dificuldade)
+}
+
+func extractJSONFromModelOutput(raw string) (string, error) {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return "", errors.New("resposta vazia")
+	}
+
+	if json.Valid([]byte(trimmed)) {
+		return trimmed, nil
+	}
+
+	// Common model behavior: wrapping JSON in ```json ... ```
+	trimmed = stripMarkdownCodeFence(trimmed)
+	if json.Valid([]byte(trimmed)) {
+		return trimmed, nil
+	}
+
+	for i := 0; i < len(trimmed); i++ {
+		if trimmed[i] != '{' && trimmed[i] != '[' {
+			continue
+		}
+
+		var candidate json.RawMessage
+		decoder := json.NewDecoder(strings.NewReader(trimmed[i:]))
+		if err := decoder.Decode(&candidate); err == nil && json.Valid(candidate) {
+			return string(candidate), nil
+		}
+	}
+
+	return "", errors.New("não foi possível extrair JSON")
+}
+
+func stripMarkdownCodeFence(input string) string {
+	lines := strings.Split(input, "\n")
+	if len(lines) < 2 {
+		return input
+	}
+
+	first := strings.TrimSpace(lines[0])
+	last := strings.TrimSpace(lines[len(lines)-1])
+	if !strings.HasPrefix(first, "```") || last != "```" {
+		return input
+	}
+
+	return strings.TrimSpace(strings.Join(lines[1:len(lines)-1], "\n"))
 }
